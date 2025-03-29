@@ -1,13 +1,11 @@
 import os
 import numpy as np
 import cv2
-import tensorflow as tf
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications import EfficientNetB7
-from tensorflow.keras.applications.efficientnet import preprocess_input
-from tensorflow.keras.models import Model
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import normalize
+from keras.api.preprocessing import image
+from keras.api.applications.efficientnet import EfficientNetB7 , preprocess_input
+from keras.api.models import Model
 
 def get_extract_model():
     base_model = EfficientNetB7(weights='imagenet', include_top=False, pooling='avg')

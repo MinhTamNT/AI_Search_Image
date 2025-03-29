@@ -1,0 +1,17 @@
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.0-pg17  # Official pgvector image
+    container_name: postgres_vector
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
