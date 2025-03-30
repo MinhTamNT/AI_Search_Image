@@ -1,0 +1,7 @@
+.env
+.idea
+.venv
+flickr30k_images
+dataset
+results.csv
+.env
