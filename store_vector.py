@@ -1,11 +1,11 @@
 import os
 import numpy as np
 import cv2
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import normalize
 from keras.api.preprocessing import image
-from keras.api.applications.efficientnet import EfficientNetB7 , preprocess_input
+from keras.api.applications.efficientnet import EfficientNetB7, preprocess_input
 from keras.api.models import Model
+from dao import save_embeddings_and_comments_to_db
 
 def get_extract_model():
     base_model = EfficientNetB7(weights='imagenet', include_top=False, pooling='avg')
@@ -51,17 +51,11 @@ def load_images_from_folder(folder):
     return images, image_paths
 
 data_folder = 'flickr30k_images/flickr30k_images'
-images, image_paths = load_images_from_folder(data_folder)
-
-train_images, test_images, train_paths, test_paths = train_test_split(images, image_paths, test_size=0.2, random_state=42)
+file_excel = 'results.csv'
 
 model = get_extract_model()
-train_embeddings = compute_embeddings(train_images, model)
-test_embeddings = compute_embeddings(test_images, model)
+train_embeddings = np.load('train_embeddings.npy')
+image_paths = np.load('train_image_paths.npy')
+image_paths = [str(path) for path in image_paths]
 
-np.save("train_embeddings.npy", train_embeddings)
-np.save("test_embeddings.npy", test_embeddings)
-np.save("train_image_paths.npy", np.array(train_paths))
-np.save("test_image_paths.npy", np.array(test_paths))
-
-print("✅ Train/Test Embeddings have been saved!")
+save_embeddings_and_comments_to_db(image_paths, train_embeddings, file_excel)
