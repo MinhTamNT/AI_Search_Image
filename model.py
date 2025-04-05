@@ -8,13 +8,11 @@ from dotenv import load_dotenv, dotenv_values
 load_dotenv()
 Base = declarative_base()
 
-
-
 class Image(Base):
     __tablename__ = 'Image'
     id = Column(Integer, primary_key=True)
     image_path = Column(Text, nullable=False)
-    embedding = Column(VECTOR(128))
+    embedding = Column(VECTOR(2560), nullable=False)
     comments = relationship("ImageComment", back_populates="image", cascade="all, delete-orphan")
 
 class ImageComment(Base):
@@ -27,3 +25,4 @@ class ImageComment(Base):
 engine = create_engine(os.getenv("DATABASE_URL"))
 
 Base.metadata.create_all(engine)
+

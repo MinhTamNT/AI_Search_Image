@@ -5,7 +5,7 @@ from sklearn.preprocessing import normalize
 from keras.api.preprocessing import image
 from keras.api.applications.efficientnet import EfficientNetB7, preprocess_input
 from keras.api.models import Model
-from dao import save_embeddings_and_comments_to_db
+from dao.dao import save_embeddings_and_comments_to_db
 
 def get_extract_model():
     base_model = EfficientNetB7(weights='imagenet', include_top=False, pooling='avg')
