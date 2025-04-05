@@ -9,6 +9,17 @@ This project provides a web service for searching similar images and storing ima
 - Add comments to images.
 - Asynchronous dataset updates to avoid delays in user responses.
 
+## Technologies Used
+
+- ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+- ![Flask](https://img.shields.io/badge/Flask-1.1.2-green)
+- ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-1.3.23-red)
+- ![Keras](https://img.shields.io/badge/Keras-2.4.3-orange)
+- ![OpenCV](https://img.shields.io/badge/OpenCV-4.5.1-yellow)
+- ![FAISS](https://img.shields.io/badge/FAISS-1.7.0-lightgrey)
+- ![Redis](https://img.shields.io/badge/Redis-6.0.9-red)
+- ![Pandas](https://img.shields.io/badge/Pandas-1.2.1-blue)
+
 ## Requirements
 
 - Python 3.8+
