@@ -62,6 +62,7 @@ def set_default_probas(M: int, m_L: float):
     return assign_probas, cum_nneighbor_per_level
 
 def load_embeddings():
+    # redis_client.flushdb()
     embeddings_data = redis_client.get('embeddings')
     image_paths_data = redis_client.get('image_paths')
 
@@ -116,7 +117,6 @@ def search_similar_images(embedding, train_embeddings, k=5):
         level = random_level(assign_probas, rng)
         index.add(np.expand_dims(vector.astype(np.float32), axis=0))
 
-    # Tìm kiếm tương tự
     embedding = embedding.astype(np.float32).reshape(1, -1)
     distances, indices = index.search(embedding, k)
     return distances, indices

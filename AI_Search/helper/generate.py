@@ -1,19 +1,18 @@
 from transformers import BlipProcessor, TFBlipForConditionalGeneration
 from PIL import Image as PILImage
 
-caption_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base" ,use_fast=False)
+caption_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 caption_model = TFBlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+
+prompts = [
+    "a beautiful scenery of",
+    "an artistic representation of",
+    "a detailed photograph of",
+    "a stunning image of"
+]
 
 def generate_comments(image_path, num_comments=4):
     image = PILImage.open(image_path).convert('RGB')
-    prompts = [
-        "Describe this image briefly.",
-        "Give a detailed description of the image.",
-        "What is happening in this photo?",
-        "Write a creative caption for this picture.",
-        "Summarize the image in one sentence."
-    ]
-
     comments = []
     for prompt in prompts[:num_comments]:
         inputs = caption_processor(images=image, text=prompt, return_tensors="tf")
