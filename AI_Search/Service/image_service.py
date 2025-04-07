@@ -62,6 +62,16 @@ def set_default_probas(M: int, m_L: float):
     return assign_probas, cum_nneighbor_per_level
 
 def load_embeddings():
+    embeddings_data = redis_client.get('embeddings')
+    image_paths_data = redis_client.get('image_paths')
+
+    if embeddings_data and image_paths_data:
+        print("Loading data from Redis.")
+        embeddings = pickle.loads(embeddings_data)
+        image_paths = pickle.loads(image_paths_data)
+        return embeddings, image_paths
+
+    print("Redis empty. Loading data from database...")
     images = session.query(Image).all()
     if not images:
         raise ValueError("No images found in database!")
@@ -76,10 +86,12 @@ def load_embeddings():
     embeddings = np.vstack(embeddings)
     embeddings = normalize(embeddings, axis=1, norm='l2')
 
-    redis_client.set('embeddings', pickle.dumps(embeddings))
-    redis_client.set('image_paths', pickle.dumps(image_paths))
+    redis_client.setex('embeddings',86400 ,pickle.dumps(embeddings))
+    redis_client.setex('image_paths', 86400, pickle.dumps(image_paths))
     print("Data saved to Redis.")
+
     return embeddings, image_paths
+
 
 
 def get_image_embedding(img_path, model):
@@ -92,8 +104,6 @@ def search_similar_images(embedding, train_embeddings, k=5):
     d = train_embeddings.shape[1]
     M = 32
     m_L = 1.5
-
-    # Tạo FAISS HNSW Index
     index = faiss.IndexHNSWFlat(d, M)
     index.hnsw.efConstruction = 200
     index.hnsw.efSearch = 200
@@ -111,18 +121,3 @@ def search_similar_images(embedding, train_embeddings, k=5):
     distances, indices = index.search(embedding, k)
     return distances, indices
 
-def display_results(query_img_path, train_image_paths, indices, distances, k=5):
-    fig, axes = plt.subplots(1, k + 1, figsize=(15, 5))
-    query_img = cv2.imread(query_img_path)
-    axes[0].imshow(cv2.cvtColor(query_img, cv2.COLOR_BGR2RGB))
-    axes[0].set_title("Query Image")
-    axes[0].axis("off")
-
-    for i in range(k):
-        img_path = train_image_paths[indices[0][i]]
-        img = cv2.imread(img_path)
-        axes[i + 1].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-        axes[i + 1].set_title(f"Top {i + 1}")
-        axes[i + 1].axis("off")
-
-    plt.show()

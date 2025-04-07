@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, Column, Integer, Text, ForeignKey ,String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import os
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 
 load_dotenv()
 Base = declarative_base()

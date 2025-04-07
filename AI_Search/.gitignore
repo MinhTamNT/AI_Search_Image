@@ -1,4 +1,4 @@
-.env
+../.env
 .idea
 .venv
 flickr30k_images
