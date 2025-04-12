@@ -1,12 +1,35 @@
 import pandas as pd
 import os
 from sqlalchemy.orm import sessionmaker
-from AI_Search.model import Image, ImageComment, engine
+from AI_Search.model import Image, ImageComment, Tag, engine
 from AI_Search.helper.generate import generate_comments
 from PIL import Image as PILImage
 import imagehash
+from keybert import KeyBERT
+
+# Setup session
 Session = sessionmaker(bind=engine)
 session = Session()
+
+# Khởi tạo mô hình KeyBERT
+kw_model = KeyBERT()
+
+
+def extract_tags_from_comments(comments, top_k=5):
+    # Lọc bỏ NaN, chuyển hết sang chuỗi và loại bỏ khoảng trắng
+    cleaned_comments = [str(c).strip() for c in comments if pd.notna(c)]
+    combined_text = " ".join(cleaned_comments)
+
+    if not combined_text:
+        return []
+
+    keywords = kw_model.extract_keywords(
+        combined_text,
+        keyphrase_ngram_range=(1, 2),
+        stop_words='english',
+        top_n=top_k
+    )
+    return [kw[0] for kw in keywords]
 
 
 def compute_image_hash(img_path):
@@ -25,42 +48,74 @@ def save_embeddings_and_comments_to_db(image_paths, embeddings, comments_file):
 
     for img_path, embedding in zip(image_paths, embeddings):
         img_name = os.path.basename(img_path)
-
         img_hash = compute_image_hash(img_path)
 
         if is_duplicate_image(img_hash):
             print(f"Ảnh {img_name} đã tồn tại trong cơ sở dữ liệu. Bỏ qua ảnh này.")
             continue
 
-        img_embedding = Image(image_path=img_path, embedding=embedding.tolist(), image_hash=img_hash)
+        # Lưu ảnh
+        img_embedding = Image(
+            image_path=img_path,
+            embedding=embedding.tolist(),
+            image_hash=img_hash
+        )
         session.add(img_embedding)
         session.commit()
 
+        # Lấy comment tương ứng ảnh
         comments = df[df['image_name'] == img_name].sort_values(by='comment_number')
 
         if not comments.empty:
-            comments_to_add = [
-                ImageComment(image_id=img_embedding.id, comment=row['comment'])
-                for _, row in comments.iterrows()
+            # Làm sạch dữ liệu comment
+            comment_texts = comments['comment'].fillna('').astype(str).str.strip().tolist()
+
+            # Lưu comment
+            comment_objs = [
+                ImageComment(image_id=img_embedding.id, comment=text)
+                for text in comment_texts
             ]
-            session.bulk_save_objects(comments_to_add)
+            session.bulk_save_objects(comment_objs)
+
+            # Trích xuất tag từ comment
+            tags = extract_tags_from_comments(comment_texts, top_k=5)
+
+            # Kiểm tra tag đã tồn tại
+            existing_tags = {
+                t.tag_name: t
+                for t in session.query(Tag).filter(Tag.tag_name.in_(tags)).all()
+            }
+
+            tag_objs_to_add = []
+            for tag in tags:
+                if tag in existing_tags:
+                    existing_tags[tag].images.append(img_embedding)
+                else:
+                    tag_obj = Tag(tag_name=tag, images=[img_embedding])
+                    tag_objs_to_add.append(tag_obj)
+
+            if tag_objs_to_add:
+                session.add_all(tag_objs_to_add)
 
     session.commit()
 
 
 def update_dataset(file_path, embedding):
     try:
+        if not os.path.exists(file_path):
+            print(f"File {file_path} không tồn tại.")
+            return
+
         image_hash = compute_image_hash(file_path)
         if image_hash is None:
             print("Không thể tính toán hash cho ảnh.")
             return
-        if not os.path.exists(file_path):
-            print(f"File {file_path} không tồn tại.")
-            return
+
         if is_duplicate_image(image_hash):
             print("Ảnh đã tồn tại trong cơ sở dữ liệu. Không lưu thêm.")
             return
 
+        # Lưu ảnh mới
         new_image = Image(
             image_path=file_path,
             embedding=embedding.flatten(),
@@ -70,6 +125,7 @@ def update_dataset(file_path, embedding):
         session.commit()
         print("Ảnh mới đã được lưu vào database.")
 
+        # Tạo comment mới bằng AI và lưu
         comment_texts = generate_comments(file_path, num_comments=4)
         for cmt in comment_texts:
             comment = ImageComment(image_id=new_image.id, comment=cmt)
@@ -79,5 +135,3 @@ def update_dataset(file_path, embedding):
 
     except Exception as e:
         print(f"Lỗi khi update dataset: {e}")
-
-

@@ -14,5 +14,5 @@ app.config['SWAGGER'] = {
 app.config['SWAGGER_UI_CONFIG'] = {
     'url': '/swagger.json'
 }
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 swagger = Swagger(app)

@@ -1,31 +1,55 @@
+import os
 import numpy as np
-import cv2
-import faiss
 import pickle
-import matplotlib.pyplot as plt
+import hashlib
+import redis
+import cv2
+from dotenv import load_dotenv
+from sklearn.preprocessing import normalize
+from sqlalchemy.orm import sessionmaker
 from keras.api.preprocessing.image import img_to_array
 from keras.api.applications.efficientnet import EfficientNetB7, preprocess_input
 from keras.api.models import Model
-from sklearn.preprocessing import normalize
-from sqlalchemy.orm import sessionmaker
-from AI_Search.model import Image, engine
-import  redis
+from AI_Search.model import Image, Tag, engine
+import faiss
+load_dotenv()
+
+# Redis setup
+redis_client = redis.StrictRedis(
+    host=os.getenv("REDIS_HOST", "localhost"),
+    port=int(os.getenv("REDIS_PORT", 6379)),
+    db=0,
+    decode_responses=False
+)
 
 
 Session = sessionmaker(bind=engine)
 session = Session()
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+def clear_redis_cache():
+
+    if redis_client is None:
+        print("Redis chưa được cấu hình.")
+        return
+
+    keys = redis_client.keys("embeddings:*")
+    if not keys:
+        print("Không tìm thấy key nào để xóa.")
+        return
+
+    for key in keys:
+        redis_client.delete(key)
+        print(f"Đã xóa cache Redis: {key}")
+
+
 extract_model = None
-
-
 def get_extract_model():
     global extract_model
     if extract_model is None:
         base_model = EfficientNetB7(weights="imagenet", include_top=False, pooling="avg")
         extract_model = Model(inputs=base_model.input, outputs=base_model.output)
     return extract_model
-
 
 def preprocess_image(img_path):
     img = cv2.imread(img_path)
@@ -38,6 +62,10 @@ def preprocess_image(img_path):
     img = preprocess_input(img)
     return img
 
+def get_image_embedding(img_path, model):
+    img = preprocess_image(img_path)
+    embedding = model.predict(img).flatten()
+    return normalize(embedding.reshape(1, -1), axis=1, norm='l2')
 
 def random_level(assign_probas: list, rng):
     f = rng.uniform()
@@ -61,45 +89,52 @@ def set_default_probas(M: int, m_L: float):
         level += 1
     return assign_probas, cum_nneighbor_per_level
 
-def load_embeddings():
-    # redis_client.flushdb()
-    embeddings_data = redis_client.get('embeddings')
-    image_paths_data = redis_client.get('image_paths')
 
-    if embeddings_data and image_paths_data:
-        print("Loading data from Redis.")
-        embeddings = pickle.loads(embeddings_data)
-        image_paths = pickle.loads(image_paths_data)
+def generate_cache_key(filter_tags):
+    if not filter_tags:
+        return "embeddings:all"
+    sorted_tags = sorted(filter_tags)
+    tags_string = ",".join(sorted_tags)
+    hash_key = hashlib.md5(tags_string.encode()).hexdigest()
+    return f"embeddings:{hash_key}"
+
+def load_embeddings(filter_tags=None):
+    clear_redis_cache()
+    if filter_tags is None:
+        filter_tags = []
+
+    cache_key = generate_cache_key(filter_tags)
+    cached_data = redis_client.get(cache_key)
+
+    if cached_data:
+        print("Load from Redis.")
+        embeddings, image_paths = pickle.loads(cached_data)
         return embeddings, image_paths
 
-    print("Redis empty. Loading data from database...")
-    images = session.query(Image).all()
-    if not images:
-        raise ValueError("No images found in database!")
+    print("Load from DB...")
+    if not filter_tags:
+        images = session.query(Image).all()
+    else:
+        images = session.query(Image).join(Image.tags).filter(Tag.tag_name.in_(filter_tags)).all()
 
     embeddings = []
     image_paths = []
+
     for image in images:
         if image.embedding is not None:
             embeddings.append(image.embedding)
-            image_paths.append(image.image_path)
+            image_paths.append(image.image_url)
+
+    if not embeddings:
+        raise ValueError("No matching images found with the given tags!")
 
     embeddings = np.vstack(embeddings)
     embeddings = normalize(embeddings, axis=1, norm='l2')
 
-    redis_client.setex('embeddings',86400 ,pickle.dumps(embeddings))
-    redis_client.setex('image_paths', 86400, pickle.dumps(image_paths))
-    print("Data saved to Redis.")
+    redis_client.setex(cache_key, 3600, pickle.dumps((embeddings, image_paths)))
 
+    print("saved to Redis.")
     return embeddings, image_paths
-
-
-
-def get_image_embedding(img_path, model):
-    img = preprocess_image(img_path)
-    embedding = model.predict(img).flatten()
-    return normalize(embedding.reshape(1, -1), axis=1, norm='l2')
-
 
 def search_similar_images(embedding, train_embeddings, k=5):
     d = train_embeddings.shape[1]
@@ -108,7 +143,6 @@ def search_similar_images(embedding, train_embeddings, k=5):
     index = faiss.IndexHNSWFlat(d, M)
     index.hnsw.efConstruction = 200
     index.hnsw.efSearch = 200
-
 
     assign_probas, _ = set_default_probas(M, m_L)
     rng = np.random.default_rng()
@@ -120,4 +154,3 @@ def search_similar_images(embedding, train_embeddings, k=5):
     embedding = embedding.astype(np.float32).reshape(1, -1)
     distances, indices = index.search(embedding, k)
     return distances, indices
-
