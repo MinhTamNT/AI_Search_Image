@@ -12,6 +12,7 @@ from keras.api.applications.efficientnet import EfficientNetB7, preprocess_input
 from keras.api.models import Model
 from AI_Search.model import Image, Tag, engine
 import faiss
+import json
 load_dotenv()
 
 # Redis setup
@@ -99,8 +100,19 @@ def generate_cache_key(filter_tags):
     return f"embeddings:{hash_key}"
 
 def load_embeddings(filter_tags=None):
-    clear_redis_cache()
-    if filter_tags is None:
+    print("Raw filter_tags:", filter_tags)
+
+    if filter_tags and isinstance(filter_tags, list) and isinstance(filter_tags[0], str):
+        try:
+            decoded = json.loads(filter_tags[0])
+            if isinstance(decoded, list):
+                filter_tags = decoded
+        except json.JSONDecodeError:
+            pass  # giữ nguyên nếu không giải mã được
+
+    print("Decoded filter_tags:", filter_tags)
+
+    if filter_tags is None or filter_tags == []:
         filter_tags = []
 
     cache_key = generate_cache_key(filter_tags)
@@ -115,7 +127,12 @@ def load_embeddings(filter_tags=None):
     if not filter_tags:
         images = session.query(Image).all()
     else:
-        images = session.query(Image).join(Image.tags).filter(Tag.tag_name.in_(filter_tags)).all()
+        images = (
+            session.query(Image)
+            .join(Image.tags)
+            .filter(Tag.tag_name.in_(filter_tags))
+            .all()
+        )
 
     embeddings = []
     image_paths = []
@@ -129,11 +146,11 @@ def load_embeddings(filter_tags=None):
         raise ValueError("No matching images found with the given tags!")
 
     embeddings = np.vstack(embeddings)
-    embeddings = normalize(embeddings, axis=1, norm='l2')
+    embeddings = normalize(embeddings, axis=1, norm="l2")
 
     redis_client.setex(cache_key, 3600, pickle.dumps((embeddings, image_paths)))
 
-    print("saved to Redis.")
+    print("Saved to Redis.")
     return embeddings, image_paths
 
 def search_similar_images(embedding, train_embeddings, k=5):

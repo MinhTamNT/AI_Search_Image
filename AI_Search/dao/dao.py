@@ -115,7 +115,6 @@ def update_dataset(file_path, embedding):
             print("Ảnh đã tồn tại trong cơ sở dữ liệu. Không lưu thêm.")
             return
 
-        # Lưu ảnh mới
         new_image = Image(
             image_path=file_path,
             embedding=embedding.flatten(),
@@ -125,7 +124,6 @@ def update_dataset(file_path, embedding):
         session.commit()
         print("Ảnh mới đã được lưu vào database.")
 
-        # Tạo comment mới bằng AI và lưu
         comment_texts = generate_comments(file_path, num_comments=4)
         for cmt in comment_texts:
             comment = ImageComment(image_id=new_image.id, comment=cmt)
@@ -135,3 +133,17 @@ def update_dataset(file_path, embedding):
 
     except Exception as e:
         print(f"Lỗi khi update dataset: {e}")
+
+
+def get_tags_with_pagination(page, per_page, search_name=None):
+
+    query = session.query(Tag)
+
+    if search_name:
+        query = query.filter(Tag.tag_name.ilike(f"%{search_name}%"))
+
+    total_results = query.count()
+    tags = query.offset((page - 1) * per_page).limit(per_page).all()
+    total_pages = (total_results + per_page - 1) // per_page
+
+    return total_results, total_pages, tags
