@@ -140,24 +140,23 @@ def search_image():
         description: Invalid input
     """
     try:
-        # Get pagination parameters
+        # Get pagination params
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
         start = (page - 1) * per_page
         end = start + per_page
 
-        # Get tags and file
+        # Get input tags & file
         filter_tags = request.form.getlist('tags')
         file = request.files.get('file', None)
 
-        # If no tags or file are provided, return an error
         if not filter_tags and not file:
             return jsonify({"error": "No tags or file provided for search"}), 400
 
-        # If only tags are provided, search by tags
+        # CASE 1: Only tags
         if not file:
             try:
-                train_embeddings, train_image_paths = load_embeddings(filter_tags)
+                embeddings, image_paths = load_embeddings(filter_tags)
             except ValueError as e:
                 return jsonify({
                     "message": str(e),
@@ -168,10 +167,9 @@ def search_image():
                     "total_pages": 0
                 }), 200
 
-            # Return all images matching the tags
-            total_results = len(train_image_paths)
+            total_results = len(image_paths)
             total_pages = (total_results + per_page - 1) // per_page
-            paginated_results = [{"image_path": path} for path in train_image_paths[start:end]]
+            paginated_results = [{"image_path": path} for path in image_paths[start:end]]
 
             return jsonify({
                 "results": paginated_results,
@@ -181,7 +179,7 @@ def search_image():
                 "total_pages": total_pages
             }), 200
 
-        # If an image is provided, process it
+        # CASE 2: With file (and maybe tags)
         file_path = f"AI_Search/Upload/{file.filename}"
         file.save(file_path)
 
@@ -223,6 +221,8 @@ def search_image():
             for dist, idx in zip(distances[0], indices[0]) if dist < threshold
         ]
 
+        print("Filtered Results:", filtered_results)
+
         if not filtered_results:
             def async_save():
                 update_dataset(file_path, embedding)
@@ -237,7 +237,6 @@ def search_image():
                 "total_pages": 0
             }), 200
 
-        # Apply pagination
         total_results = len(filtered_results)
         total_pages = (total_results + per_page - 1) // per_page
         paginated_results = filtered_results[start:end]

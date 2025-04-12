@@ -100,15 +100,24 @@ def generate_cache_key(filter_tags):
     return f"embeddings:{hash_key}"
 
 def load_embeddings(filter_tags=None):
-    print("Raw filter_tags:", filter_tags)
 
-    if filter_tags and isinstance(filter_tags, list) and isinstance(filter_tags[0], str):
-        try:
-            decoded = json.loads(filter_tags[0])
-            if isinstance(decoded, list):
-                filter_tags = decoded
-        except json.JSONDecodeError:
-            pass  # giữ nguyên nếu không giải mã được
+    if filter_tags and isinstance(filter_tags, list) and filter_tags != []:
+        if isinstance(filter_tags[0], str):
+            try:
+                decoded = json.loads(filter_tags[0])
+                if isinstance(decoded, list):
+                    filter_tags = decoded
+            except json.JSONDecodeError:
+                pass  # giữ nguyên nếu không giải mã được
+        elif isinstance(filter_tags[0], Image):
+            # Handle the case when filter_tags contains Image objects directly
+            image_ids = [image.id for image in filter_tags]  # Example: Using image IDs to filter
+            images = session.query(Image).filter(Image.id.in_(image_ids)).all()
+            embeddings = [image.embedding for image in images if image.embedding]
+            image_paths = [image.image_url for image in images]
+            embeddings = np.vstack(embeddings)
+            embeddings = normalize(embeddings, axis=1, norm="l2")
+            return embeddings, image_paths
 
     print("Decoded filter_tags:", filter_tags)
 
@@ -152,6 +161,8 @@ def load_embeddings(filter_tags=None):
 
     print("Saved to Redis.")
     return embeddings, image_paths
+
+
 
 def search_similar_images(embedding, train_embeddings, k=5):
     d = train_embeddings.shape[1]
