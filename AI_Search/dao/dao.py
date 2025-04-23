@@ -70,17 +70,14 @@ def save_embeddings_and_comments_to_db(image_paths, embeddings, comments_file):
             # Làm sạch dữ liệu comment
             comment_texts = comments['comment'].fillna('').astype(str).str.strip().tolist()
 
-            # Lưu comment
             comment_objs = [
                 ImageComment(image_id=img_embedding.id, comment=text)
                 for text in comment_texts
             ]
             session.bulk_save_objects(comment_objs)
 
-            # Trích xuất tag từ comment
             tags = extract_tags_from_comments(comment_texts, top_k=5)
 
-            # Kiểm tra tag đã tồn tại
             existing_tags = {
                 t.tag_name: t
                 for t in session.query(Tag).filter(Tag.tag_name.in_(tags)).all()
