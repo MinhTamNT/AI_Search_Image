@@ -1,6 +1,9 @@
 from flask import Flask
 from flask_cors import CORS
 from flasgger import Swagger
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../AI_Search')))
 
 app = Flask(__name__)
 app.config['WTF_CSRF_ENABLED'] = False

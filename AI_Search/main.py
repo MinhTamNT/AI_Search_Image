@@ -4,7 +4,10 @@ import os
 from Service.image_service import get_extract_model, load_embeddings, get_image_embedding, search_similar_images
 from dao.dao import update_dataset , get_tags_with_pagination
 from AI_Search import app
-
+from dotenv import load_dotenv
+import uuid
+import datetime
+load_dotenv()
 @app.route('/tags', methods=['GET'])
 def get_tags():
     """
@@ -149,7 +152,6 @@ def search_image():
         # Get input tags & file
         filter_tags = request.form.getlist('tags')
         file = request.files.get('file', None)
-
         if not filter_tags and not file:
             return jsonify({"error": "No tags or file provided for search"}), 400
 
@@ -179,9 +181,39 @@ def search_image():
                 "total_pages": total_pages
             }), 200
 
-        # CASE 2: With file (and maybe tags)
-        file_path = f"AI_Search/Upload/{file.filename}"
-        file.save(file_path)
+        # Xử lý file upload và giữ nguyên định dạng
+        if file and file.filename != '':
+            # Đảm bảo thư mục upload tồn tại
+            upload_folder = os.getenv('URL_UPLOAD')
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            original_filename = file.filename
+            file_mime = file.mimetype
+            
+            # Chuyển đổi mimetype sang phần mở rộng file
+            mime_to_extension = {
+                'image/jpeg': '.jpg',
+                'image/jpg': '.jpg',
+                'image/png': '.png',
+                'image/gif': '.gif',
+                'image/bmp': '.bmp',
+                'image/webp': '.webp'
+            }
+            
+            if file_mime not in mime_to_extension:
+                allowed_formats = ', '.join(mime_to_extension.values())
+                return jsonify({"error": f"File format not supported. Allowed formats: {allowed_formats}"}), 400
+                
+            file_ext = mime_to_extension[file_mime]
+            
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            unique_filename = f"{timestamp}_{uuid.uuid4().hex[:8]}{file_ext}"
+            
+            file_path = os.path.join(upload_folder, unique_filename)
+            
+            file.save(file_path)
+        else:
+            return jsonify({"error": "No file provided for search"}), 400
 
         model = get_extract_model()
         embedding = get_image_embedding(file_path, model)
@@ -252,9 +284,9 @@ def search_image():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    finally:
-        if 'file_path' in locals() and os.path.exists(file_path):
-            os.remove(file_path)
+    # finally:
+    #     if 'file_path' in locals() and os.path.exists(file_path):
+    #         os.remove(file_path)
 
 
 @app.route('/')

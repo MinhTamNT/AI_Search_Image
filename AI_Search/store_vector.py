@@ -50,12 +50,14 @@ def load_images_from_folder(folder):
                     image_paths.append(img_path)
     return images, image_paths
 
-data_folder = 'flickr30k_images/flickr30k_images'
+data_folder = '/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/'
 file_excel = 'results.csv'
-
+#/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/flickr30k_images/flickr30k_images/36979.jpg
 model = get_extract_model()
 train_embeddings = np.load('train_embeddings.npy')
 image_paths = np.load('train_image_paths.npy')
-image_paths = [str(path) for path in image_paths]
+
+# Ghép đường dẫn tuyệt đối
+image_paths = [os.path.join(data_folder, str(path)) for path in image_paths]
 
 save_embeddings_and_comments_to_db(image_paths, train_embeddings, file_excel)
