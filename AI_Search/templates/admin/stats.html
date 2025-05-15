@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics - Hệ thống quản lý ảnh{% endblock %}
+
+{% block styles %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .stats-card {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        border: none;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-card i {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        background: linear-gradient(45deg, #4e73df, #36b9cc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .stats-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #2e59d9;
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        color: #5a5c69;
+        font-weight: 500;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        border: none;
+    }
+    
+    .card-header {
+        background: linear-gradient(45deg, #4e73df, #224abe);
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 15px 20px;
+    }
+    
+    .card-header h5 {
+        margin: 0;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .page-title {
+        font-weight: 700;
+        color: #3a3b45;
+        margin-bottom: 1.5rem;
+        border-left: 5px solid #4e73df;
+        padding-left: 15px;
+    }
+    
+    .stat-color-1 {
+        background: linear-gradient(45deg, #4e73df, #224abe);
+    }
+    
+    .stat-color-2 {
+        background: linear-gradient(45deg, #1cc88a, #169a6b);
+    }
+    
+    .stat-color-3 {
+        background: linear-gradient(45deg, #36b9cc, #258391);
+    }
+    
+    .stat-color-4 {
+        background: linear-gradient(45deg, #f6c23e, #dda20a);
+    }
+    
+    .stats-gradient {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0.9;
+    }
+    
+    .stats-content {
+        position: relative;
+        z-index: 1;
+        color: white;
+    }
+    
+    .stats-content i, 
+    .stats-content .stats-value, 
+    .stats-content .stats-label {
+        color: white;
+        -webkit-text-fill-color: white;
+    }
+    
+    .no-data-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        flex-direction: column;
+    }
+    
+    .no-data-icon {
+        font-size: 3rem;
+        color: #e0e0e0;
+        margin-bottom: 15px;
+    }
+    
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .timestamp {
+        text-align: right;
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
+    /* Loading animation for stats */
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+    
+    .loading {
+        animation: pulse 1.5s infinite;
+        background: #f0f0f0;
+        border-radius: 5px;
+        height: 30px;
+    }
+    
+    /* Responsive fixes */
+    @media (max-width: 767px) {
+        .stats-value {
+            font-size: 1.8rem;
+        }
+        
+        .stats-card i {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="page-title">Thống kê hệ thống</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="stats-gradient stat-color-1"></div>
+            <div class="stats-content">
+                <i class="fas fa-images"></i>
+                <div class="stats-value">{{ stats.total_images if stats is defined and stats.total_images is defined else 0 }}</div>
+                <div class="stats-label">Tổng số ảnh</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="stats-gradient stat-color-2"></div>
+            <div class="stats-content">
+                <i class="fas fa-tags"></i>
+                <div class="stats-value">{{ stats.total_tags if stats is defined and stats.total_tags is defined else 0 }}</div>
+                <div class="stats-label">Tổng số tag</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="stats-gradient stat-color-3"></div>
+            <div class="stats-content">
+                <i class="fas fa-comments"></i>
+                <div class="stats-value">{{ stats.total_comments if stats is defined and stats.total_comments is defined else 0 }}</div>
+                <div class="stats-label">Tổng số bình luận</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stats-card h-100">
+            <div class="stats-gradient stat-color-4"></div>
+            <div class="stats-content">
+                <i class="fas fa-calculator"></i>
+                <div class="stats-value">{{ (stats.total_comments / stats.total_images)|round(1) if stats is defined and stats.total_images is defined and stats.total_images > 0 else 0 }}</div>
+                <div class="stats-label">Bình luận trung bình/ảnh</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="timestamp mb-3">
+    Cập nhật lần cuối: {{ now.strftime('%d/%m/%Y %H:%M:%S') if now is defined else 'Không có dữ liệu' }}
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie mr-2"></i> Phân bổ tag</h5>
+            </div>
+            <div class="card-body">
+                {% if stats is defined and stats.tag_counts is defined and stats.tag_counts %}
+                    <div class="chart-container">
+                        <canvas id="tagDistributionChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="no-data-container">
+                        <div class="no-data-icon"><i class="fas fa-chart-pie"></i></div>
+                        <p class="text-muted">Không có dữ liệu hiển thị</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar mr-2"></i> Top 10 tag phổ biến nhất</h5>
+            </div>
+            <div class="card-body">
+                {% if stats is defined and stats.tag_counts is defined and stats.tag_counts %}
+                    <div class="chart-container">
+                        <canvas id="topTagsChart"></canvas>
+                    </div>
+                {% else %}
+                    <div class="no-data-container">
+                        <div class="no-data-icon"><i class="fas fa-chart-bar"></i></div>
+                        <p class="text-muted">Không có dữ liệu hiển thị</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-table mr-2"></i> Chi tiết phân bổ tag</h5>
+            </div>
+            <div class="card-body">
+                {% if stats is defined and stats.tag_counts is defined and stats.tag_counts %}
+                    <div class="table-container">
+                        <table class="table table-striped table-hover">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tag</th>
+                                    <th>Số lượng ảnh</th>
+                                    <th>Tỷ lệ</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tag_name, tag_id, count in stats.tag_counts %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td><span class="badge badge-primary">{{ tag_name }}</span></td>
+                                    <td>{{ count }}</td>
+                                    <td>{{ (count / stats.total_images * 100)|round(1) if stats.total_images > 0 else 0 }}%</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_gallery', tag=tag_name) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> Xem ảnh
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="no-data-container">
+                        <div class="no-data-icon"><i class="fas fa-table"></i></div>
+                        <p class="text-muted">Không có dữ liệu hiển thị</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Simple animation for numbers using jQuery
+        $('.stats-value').each(function() {
+            const $this = $(this);
+            const finalValue = parseFloat($this.text());
+            
+            if (!isNaN(finalValue)) {
+                // Start from zero
+                let startValue = 0;
+                // Animate over 1.5 seconds
+                const duration = 1500;
+                // Update every 50ms
+                const interval = 50;
+                // Calculate increment per interval
+                const increment = finalValue / (duration / interval);
+                // Current value during animation
+                let currentValue = startValue;
+                // Display precision
+                const precision = finalValue % 1 === 0 ? 0 : 1;
+                
+                const timer = setInterval(function() {
+                    currentValue += increment;
+                    
+                    if (currentValue >= finalValue) {
+                        clearInterval(timer);
+                        currentValue = finalValue;
+                    }
+                    
+                    $this.text(currentValue.toFixed(precision));
+                }, interval);
+            }
+        });
+        
+        // Initialize charts if data exists
+        {% if stats is defined and stats.tag_counts is defined and stats.tag_counts %}
+            // Prepare data for charts
+            const tagNames = [{% for tag_name, tag_id, count in stats.tag_counts %}'{{ tag_name }}',{% endfor %}];
+            const tagCounts = [{% for tag_name, tag_id, count in stats.tag_counts %}{{ count }},{% endfor %}];
+            
+            // Enhanced color palette for charts with better contrast
+            const colors = [
+                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                '#fd7e14', '#6f42c1', '#20c9a6', '#5a5c69', '#858796',
+                '#5cb85c', '#d9534f', '#5bc0de', '#f0ad4e', '#337ab7',
+                '#ff6384', '#ff9f40', '#ffcd56', '#4bc0c0', '#36a2eb'
+            ];
+            
+            // Prepare colors array for all tags
+            const backgroundColors = tagNames.map((_, index) => colors[index % colors.length]);
+            
+            // Top 10 tags chart
+            const topTags = tagNames.slice(0, 10);
+            const topTagCounts = tagCounts.slice(0, 10);
+            const topTagColors = backgroundColors.slice(0, 10);
+            
+            // Create chart for tag distribution with improved options
+            const tagDistributionCtx = document.getElementById('tagDistributionChart').getContext('2d');
+            new Chart(tagDistributionCtx, {
+                type: 'pie',
+                data: {
+                    labels: tagNames,
+                    datasets: [{
+                        data: tagCounts,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    size: 11
+                                },
+                                padding: 10
+                            },
+                            display: tagNames.length < 20 // Hide legend if too many items
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                    return `${label}: ${value} (${percentage})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Create chart for top 10 tags with improved options
+            const topTagsCtx = document.getElementById('topTagsChart').getContext('2d');
+            new Chart(topTagsCtx, {
+                type: 'bar',
+                data: {
+                    labels: topTags,
+                    datasets: [{
+                        label: 'Số lượng ảnh',
+                        data: topTagCounts,
+                        backgroundColor: topTagColors,
+                        borderWidth: 1,
+                        barPercentage: 0.7,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw || 0;
+                                    const total = {{ stats.total_images if stats is defined and stats.total_images is defined and stats.total_images > 0 else 1 }};
+                                    const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                    return `Số lượng ảnh: ${value} (${percentage})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        {% endif %}
+    });
+</script>
+{% endblock %}

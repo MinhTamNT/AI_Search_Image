@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Image Details - Hệ thống quản lý ảnh{% endblock %}
+
+{% block styles %}
+<style>
+    .image-detail-container {
+        max-height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    .image-detail-container img {
+        max-width: 100%;
+        max-height: 500px;
+        object-fit: contain;
+    }
+    .tag-badge {
+        margin-right: 5px;
+        margin-bottom: 5px;
+        display: inline-block;
+    }
+    .comment-bubble {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #0d6efd;
+    }
+    .metadata-item {
+        margin-bottom: 10px;
+    }
+    .metadata-label {
+        font-weight: bold;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="page-title">
+            Chi tiết ảnh
+            <a href="{{ url_for('admin_gallery') }}" class="btn btn-sm btn-secondary float-end">
+                <i class="fas fa-arrow-left me-1"></i>Quay lại thư viện
+            </a>
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-body p-0">
+                <div class="image-detail-container">
+                    {% if image.image_url %}
+                        <img src="{{ image.image_url }}" alt="Image {{ image.id }}" class="img-fluid">
+                    {% else %}
+                        <img src="/static/uploads/{{ image.image_path.split('/')[-1] }}" alt="Image {{ image.id }}" class="img-fluid">
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">ID: {{ image.id }}</span>
+                    <span class="badge bg-primary"><i class="fas fa-comments me-1"></i>{{ image.comments|length }} bình luận</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Bình luận</h5>
+            </div>
+            <div class="card-body">
+                {% if image.comments %}
+                    {% for comment in image.comments %}
+                        <div class="comment-bubble">
+                            <p class="mb-0">{{ comment.comment }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">Không có bình luận nào cho ảnh này.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Thông tin</h5>
+            </div>
+            <div class="card-body">
+                <div class="metadata-item">
+                    <div class="metadata-label">Đường dẫn ảnh</div>
+                    <div class="text-truncate">{{ image.image_path }}</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Hash ảnh</div>
+                    <div>{{ image.image_hash }}</div>
+                </div>
+                
+                {% if image.image_url %}
+                <div class="metadata-item">
+                    <div class="metadata-label">URL ảnh</div>
+                    <div class="text-truncate">
+                        <a href="{{ image.image_url }}" target="_blank">{{ image.image_url }}</a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Số bình luận</div>
+                    <div>{{ image.comments|length }}</div>
+                </div>
+                
+                <div class="metadata-item">
+                    <div class="metadata-label">Số tag</div>
+                    <div>{{ image.tags|length }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Tags</h5>
+            </div>
+            <div class="card-body">
+                {% if image.tags %}
+                    {% for tag in image.tags %}
+                        <a href="{{ url_for('admin_gallery', tag=tag.tag_name) }}" class="badge bg-secondary tag-badge text-decoration-none">
+                            {{ tag.tag_name }}
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">Không có tag nào cho ảnh này.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

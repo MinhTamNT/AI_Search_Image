@@ -1,0 +1,686 @@
+{% extends "base.html" %}
+
+{% block title %}Image Gallery - Hệ thống quản lý ảnh{% endblock %}
+
+{% block styles %}
+<style>
+    /* Gallery page styling */
+    .page-title {
+        font-weight: 700;
+        color: #3a3b45;
+        margin-bottom: 1.5rem;
+        border-left: 5px solid #4e73df;
+        padding-left: 15px;
+    }
+    
+    /* Filter section */
+    .filter-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-card:hover {
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    
+    .filter-card .card-header {
+        background: linear-gradient(45deg, #4e73df, #224abe);
+        color: white;
+        font-weight: 600;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .filter-card .card-body {
+        padding: 20px;
+    }
+    
+    .filter-label {
+        font-weight: 600;
+        color: #4e73df;
+        margin-bottom: 8px;
+    }
+    
+    .custom-select {
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .custom-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .filter-btn {
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    
+    /* Info card */
+    .info-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border: none;
+        height: 100%;
+    }
+    
+    .info-card .card-body {
+        padding: 20px;
+    }
+    
+    .info-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #4e73df;
+        margin-bottom: 5px;
+    }
+    
+    .info-label {
+        color: #858796;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .upload-btn {
+        border-radius: 50px;
+        padding: 8px 20px;
+        background: linear-gradient(45deg, #1cc88a, #169a6b);
+        border: none;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(28, 200, 138, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(28, 200, 138, 0.3);
+    }
+    
+    /* Image gallery */
+    .masonry-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-gap: 20px;
+        grid-auto-flow: dense;
+    }
+    
+    .image-card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        border: none;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        height: 100%;
+    }
+    
+    .image-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+    
+    .image-card .card-img-container {
+        position: relative;
+        overflow: hidden;
+        padding-top: 75%; /* 4:3 aspect ratio */
+    }
+    
+    .image-card .card-img-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .image-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    
+    .image-card .card-body {
+        padding: 16px;
+    }
+    
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.7) 100%);
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+    
+    .image-card:hover .image-overlay {
+        opacity: 0.8;
+    }
+    
+    .image-id-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(78, 115, 223, 0.9);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 2;
+    }
+    
+    .image-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .image-meta {
+        color: #858796;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+    
+    .image-meta i {
+        margin-right: 5px;
+        color: #4e73df;
+    }
+    
+    .tag-container {
+        margin-bottom: 15px;
+    }
+    
+    .image-tag {
+        display: inline-block;
+        background: #4e73df;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .image-tag:hover {
+        background: #224abe;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    
+    .detail-btn {
+        border-radius: 8px;
+        background: linear-gradient(45deg, #4e73df, #224abe);
+        border: none;
+        font-weight: 600;
+        padding: 8px 0;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.2);
+    }
+    
+    .detail-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(78, 115, 223, 0.3);
+    }
+    
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+    }
+    
+    .empty-state i {
+        font-size: 5rem;
+        color: #d1d3e2;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h4 {
+        font-weight: 700;
+        color: #3a3b45;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state p {
+        color: #858796;
+        margin-bottom: 25px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Pagination */
+    .pagination-container {
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .pagination {
+        gap: 5px;
+    }
+    
+    .page-item .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        font-weight: 600;
+        color: #4e73df;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+    }
+    
+    .page-item .page-link:hover {
+        background: #eaecf4;
+        color: #224abe;
+        transform: translateY(-2px);
+    }
+    
+    .page-item.active .page-link {
+        background: linear-gradient(45deg, #4e73df, #224abe);
+        border-color: #4e73df;
+    }
+    
+    .page-item.disabled .page-link {
+        color: #d1d3e2;
+    }
+    
+    /* Loading animation */
+    @keyframes shimmer {
+        0% { background-position: -1000px 0 }
+        100% { background-position: 1000px 0 }
+    }
+    
+    .loading {
+        animation: shimmer 2s infinite linear;
+        background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+        background-size: 1000px 100%;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+        .masonry-grid {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        }
+        
+        .filter-card, .info-card {
+            margin-bottom: 15px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .masonry-grid {
+            grid-template-columns: 1fr;
+            grid-gap: 15px;
+        }
+    }
+    
+    /* Image preview */
+    .image-preview-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    
+    .image-preview-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+    
+    .preview-image {
+        max-width: 90%;
+        max-height: 80vh;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .preview-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .preview-close:hover {
+        transform: scale(1.1);
+        color: #f8f9fc;
+    }
+    
+    .preview-info {
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: white;
+        padding: 15px;
+    }
+    
+    .preview-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .preview-meta {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="page-title">Thư viện ảnh</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-6 col-md-12 mb-4 mb-lg-0">
+        <div class="card filter-card">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-filter me-2"></i>
+                <h5 class="mb-0">Bộ lọc</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('admin_gallery') }}" method="GET" id="filter-form" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="tag" class="filter-label"><i class="fas fa-tags me-1"></i>Lọc theo tag</label>
+                        <select class="form-select custom-select" id="tag" name="tag">
+                            <option value="">Tất cả tags</option>
+                            {% for tag in all_tags %}
+                                <option value="{{ tag.tag_name }}" {% if tag_filter == tag.tag_name %}selected{% endif %}>{{ tag.tag_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="per_page" class="filter-label"><i class="fas fa-list-ol me-1"></i>Hiển thị</label>
+                        <select class="form-select custom-select" id="per_page" name="per_page">
+                            <option value="12" {% if per_page == 12 %}selected{% endif %}>12 ảnh</option>
+                            <option value="24" {% if per_page == 24 %}selected{% endif %}>24 ảnh</option>
+                            <option value="48" {% if per_page == 48 %}selected{% endif %}>48 ảnh</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary filter-btn w-100">
+                            <i class="fas fa-search me-1"></i>Lọc
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 col-md-12">
+        <div class="card info-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <h5 class="mb-0">Thông tin thư viện</h5>
+                </div>
+                <a href="{{ url_for('admin_upload') }}" class="btn btn-success upload-btn">
+                    <i class="fas fa-upload me-1"></i>Tải lên ảnh mới
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="info-value" id="totalImages">{{ total_results }}</div>
+                        <div class="info-label"><i class="fas fa-images me-1"></i>Tổng số ảnh</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-value">{{ page }}/{{ total_pages }}</div>
+                        <div class="info-label"><i class="fas fa-file me-1"></i>Trang hiện tại</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-value">{{ per_page }}</div>
+                        <div class="info-label"><i class="fas fa-th-large me-1"></i>Ảnh mỗi trang</div>
+                    </div>
+                </div>
+                {% if tag_filter %}
+                <div class="mt-3 text-center">
+                    <span class="badge bg-primary p-2"><i class="fas fa-tag me-1"></i>Đang lọc: {{ tag_filter }}</span>
+                    <a href="{{ url_for('admin_gallery') }}" class="btn btn-sm btn-outline-secondary ms-2">
+                        <i class="fas fa-times me-1"></i>Xóa bộ lọc
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if images %}
+<div class="masonry-grid">
+    {% for image in images %}
+    <div class="image-item">
+        <div class="card image-card">
+            <div class="card-img-container">
+                {% if image.image_url %}
+                    <img src="{{ image.image_url }}" class="card-img-top preview-trigger" data-id="{{ image.id }}" alt="Image {{ image.id }}">
+                {% else %}
+                    <img src="/static/uploads/{{ image.image_path.split('/')[-1] }}" class="card-img-top preview-trigger" data-id="{{ image.id }}" alt="Image {{ image.id }}">
+                {% endif %}
+                <div class="image-overlay"></div>
+                <div class="image-id-badge">ID: {{ image.id }}</div>
+            </div>
+            <div class="card-body">
+                <h6 class="image-title">{{ image.image_path.split('/')[-1] }}</h6>
+                <div class="image-meta">
+                    <i class="fas fa-comments"></i>{{ image.comments|length }} bình luận
+                </div>
+                <div class="tag-container">
+                    {% for tag in image.tags %}
+                        <a href="{{ url_for('admin_gallery', tag=tag.tag_name) }}" class="image-tag">{{ tag.tag_name }}</a>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('admin_image_detail', image_id=image.id) }}" class="btn btn-primary detail-btn">
+                    <i class="fas fa-eye me-1"></i>Chi tiết
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Image Preview Overlay -->
+<div class="image-preview-overlay" id="imagePreview">
+    <div class="preview-close">
+        <i class="fas fa-times"></i>
+    </div>
+    <img src="" alt="Preview" class="preview-image" id="previewImage">
+    <div class="preview-info">
+        <div class="preview-title" id="previewTitle"></div>
+        <div class="preview-meta" id="previewMeta"></div>
+    </div>
+</div>
+
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="empty-state">
+            <i class="fas fa-image"></i>
+            <h4>Không tìm thấy ảnh nào</h4>
+            <p>Chưa có ảnh nào trong hệ thống hoặc không có ảnh nào khớp với bộ lọc đã chọn.</p>
+            <a href="{{ url_for('admin_upload') }}" class="btn btn-primary upload-btn mt-3">
+                <i class="fas fa-upload me-1"></i>Tải lên ảnh mới
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if total_pages > 1 %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="Pagination" class="d-flex justify-content-center pagination-container">
+            <ul class="pagination">
+                {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin_gallery', page=page-1, per_page=per_page, tag=tag_filter) }}" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    </li>
+                {% endif %}
+                
+                {% set start_page = [1, page - 2]|max %}
+                {% set end_page = [start_page + 4, total_pages]|min %}
+                {% set start_page = [end_page - 4, 1]|max %}
+                
+                {% for p in range(start_page, end_page + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_gallery', page=p, per_page=per_page, tag=tag_filter) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                
+                {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin_gallery', page=page+1, per_page=per_page, tag=tag_filter) }}" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Automatically submit form when filters change
+        $('#tag, #per_page').change(function() {
+            $('#filter-form').submit();
+        });
+        
+        // Animate the count-up effect for total images
+        function animateValue(element, start, end, duration) {
+            const range = end - start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            let current = start;
+            
+            const timer = setInterval(function() {
+                current += increment;
+                element.textContent = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+        
+        // Animate total images
+        const totalImagesElement = document.getElementById('totalImages');
+        if (totalImagesElement) {
+            const finalValue = parseInt(totalImagesElement.textContent);
+            animateValue(totalImagesElement, 0, finalValue, 1000);
+        }
+        
+        // Image preview functionality
+        $('.preview-trigger').click(function() {
+            const imageUrl = $(this).attr('src');
+            const imageId = $(this).data('id');
+            const imageTitle = $(this).closest('.image-card').find('.image-title').text();
+            const commentCount = $(this).closest('.image-card').find('.image-meta').text().trim();
+            
+            $('#previewImage').attr('src', imageUrl);
+            $('#previewTitle').text(imageTitle);
+            $('#previewMeta').html(`<i class="fas fa-image me-1"></i>ID: ${imageId} - ${commentCount}`);
+            $('#imagePreview').addClass('active');
+        });
+        
+        $('.preview-close').click(function() {
+            $('#imagePreview').removeClass('active');
+        });
+        
+        // Close preview when clicking outside the image
+        $('#imagePreview').click(function(e) {
+            if (e.target.id === 'imagePreview') {
+                $('#imagePreview').removeClass('active');
+            }
+        });
+        
+        // Close preview with Escape key
+        $(document).keydown(function(e) {
+            if (e.key === "Escape") {
+                $('#imagePreview').removeClass('active');
+            }
+        });
+        
+        // Lazy loading for images
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('img.lazy').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+    });
+</script>
+{% endblock %}

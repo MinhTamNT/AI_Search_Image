@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Image - Hệ thống quản lý ảnh{% endblock %}
+
+{% block styles %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .preview-container {
+        width: 100%;
+        height: 300px;
+        border: 2px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    .preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        display: none;
+    }
+    .upload-text {
+        color: #6c757d;
+    }
+    .comment-section {
+        margin-top: 20px;
+    }
+    .select2-container {
+        width: 100% !important;
+    }
+    #status-message {
+        display: none;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+    .spinner-border {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="page-title">Tải lên ảnh mới</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div id="status-message" class="alert"></div>
+                
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="preview-container">
+                                <img id="preview-image" class="preview-image" src="#" alt="Preview">
+                                <div class="upload-text">
+                                    <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                                    <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="image" class="form-label visually-hidden">Chọn ảnh</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                                <div class="form-text">Định dạng hỗ trợ: JPG, PNG, GIF, BMP, WEBP</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="tags" class="form-label">Tags <span class="text-danger">*</span></label>
+                                <select class="form-control" id="tags" name="tags" multiple="multiple" required>
+                                    {% for tag in all_tags %}
+                                        <option value="{{ tag.tag_name }}">{{ tag.tag_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Nhập hoặc chọn các tag cho ảnh (cách nhau bằng dấu phẩy)</div>
+                            </div>
+                            
+                            <div class="comment-section">
+                                <h5>Bình luận <span class="text-danger">*</span></h5>
+                                <p class="form-text">Thêm ít nhất 1 bình luận cho ảnh (tối đa 4)</p>
+                                
+                                {% for i in range(1, 5) %}
+                                <div class="mb-3">
+                                    <label for="comment_{{ i }}" class="form-label">Bình luận {{ i }}</label>
+                                    <textarea class="form-control" id="comment_{{ i }}" name="comment_{{ i }}" rows="2" {% if i == 1 %}required{% endif %}></textarea>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('admin_dashboard') }}';">
+                            <i class="fas fa-times me-1"></i>Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            <i class="fas fa-save me-1"></i>Lưu ảnh
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for tags
+        $('#tags').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            placeholder: 'Nhập hoặc chọn tags...'
+        });
+        
+        // Image preview
+        $('#image').change(function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#preview-image').attr('src', e.target.result);
+                    $('#preview-image').show();
+                    $('.upload-text').hide();
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Drag and drop
+        const previewContainer = $('.preview-container')[0];
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            previewContainer.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            previewContainer.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            previewContainer.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            previewContainer.classList.add('border-primary');
+        }
+        
+        function unhighlight() {
+            previewContainer.classList.remove('border-primary');
+        }
+        
+        previewContainer.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                $('#image')[0].files = files;
+                $('#image').trigger('change');
+            }
+        }
+        
+        // Click on preview container
+        $('.preview-container').click(function() {
+            $('#image').click();
+        });
+        
+        // Form submission
+        $('#upload-form').submit(function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!validateForm()) {
+                return false;
+            }
+            
+            // Prepare form data
+            const formData = new FormData(this);
+            
+            // Show loading
+            $('#submit-btn').prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang tải lên...'
+            );
+            
+            // Submit form
+            $.ajax({
+                url: "{{ url_for('admin_upload') }}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    showMessage('success', 'Tải lên thành công! ' + response.message);
+                    // Reset form after a delay
+                    setTimeout(function() {
+                        resetForm();
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Đã có lỗi xảy ra.';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    }
+                    showMessage('danger', errorMsg);
+                    $('#submit-btn').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Lưu ảnh');
+                }
+            });
+        });
+        
+        function validateForm() {
+            // Check if image is selected
+            if (!$('#image')[0].files.length) {
+                showMessage('danger', 'Vui lòng chọn một ảnh để tải lên.');
+                return false;
+            }
+            
+            // Check if at least one comment is provided
+            if (!$('#comment_1').val().trim()) {
+                showMessage('danger', 'Vui lòng nhập ít nhất một bình luận.');
+                return false;
+            }
+            
+            // Check if tags are selected
+            if (!$('#tags').val() || $('#tags').val().length === 0) {
+                showMessage('danger', 'Vui lòng nhập ít nhất một tag.');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        function showMessage(type, message) {
+            $('#status-message')
+                .removeClass('alert-success alert-danger')
+                .addClass('alert-' + type)
+                .html(message)
+                .show();
+            
+            // Scroll to message
+            $('html, body').animate({
+                scrollTop: $('#status-message').offset().top - 100
+            }, 200);
+        }
+        
+        function resetForm() {
+            // Reset form
+            $('#upload-form')[0].reset();
+            $('#preview-image').hide().attr('src', '#');
+            $('.upload-text').show();
+            $('#tags').val(null).trigger('change');
+            
+            // Reset button
+            $('#submit-btn').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Lưu ảnh');
+        }
+    });
+</script>
+{% endblock %}

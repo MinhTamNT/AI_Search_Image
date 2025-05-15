@@ -1,0 +1,153 @@
+2025-05-11 12:10:08,144 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:10:08,145 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:10:12,264 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-05-11 12:10:12,264 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-11 12:10:12,266 - werkzeug - INFO -  * Restarting with stat
+2025-05-11 12:10:18,988 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:10:18,988 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:10:24,173 - werkzeug - WARNING -  * Debugger is active!
+2025-05-11 12:10:24,191 - werkzeug - INFO -  * Debugger PIN: 925-072-862
+2025-05-11 12:11:12,847 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:12] "GET /tags?search_name=&page=1&per_page=10 HTTP/1.1" 200 -
+2025-05-11 12:11:17,146 - __main__ - ERROR - Unexpected error: invalid syntax (<string>, line 1)
+Traceback (most recent call last):
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 57, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 77, in wrapper
+    return jsonify(eval(result))
+  File "<string>", line 1
+    (<Response 726 bytes [200 OK]>, 200)
+     ^
+SyntaxError: invalid syntax
+2025-05-11 12:11:17,148 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:17] "[35m[1mGET /tags?search_name=&page=1&per_page=10 HTTP/1.1[0m" 500 -
+2025-05-11 12:11:17,151 - __main__ - ERROR - Unexpected error: invalid syntax (<string>, line 1)
+Traceback (most recent call last):
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 57, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 77, in wrapper
+    return jsonify(eval(result))
+  File "<string>", line 1
+    (<Response 726 bytes [200 OK]>, 200)
+     ^
+SyntaxError: invalid syntax
+2025-05-11 12:11:17,152 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:17] "[35m[1mGET /tags?search_name=&page=1&per_page=10 HTTP/1.1[0m" 500 -
+2025-05-11 12:11:33,489 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:33] "[35m[1mPOST /search HTTP/1.1[0m" 500 -
+2025-05-11 12:11:34,417 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:34] "[35m[1mPOST /search HTTP/1.1[0m" 500 -
+2025-05-11 12:11:34,917 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:34] "[35m[1mPOST /search HTTP/1.1[0m" 500 -
+2025-05-11 12:11:35,417 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:35] "[35m[1mPOST /search HTTP/1.1[0m" 500 -
+2025-05-11 12:11:35,732 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:35] "[35m[1mPOST /search HTTP/1.1[0m" 500 -
+2025-05-11 12:11:35,941 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:11:35] "[35m[1mPOST /search HTTP/1.1[0m" 500 -
+2025-05-11 12:12:10,213 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:12:10] "[35m[1mPOST /search HTTP/1.1[0m" 500 -
+2025-05-11 12:12:50,177 - werkzeug - INFO -  * Detected change in '/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py', reloading
+2025-05-11 12:12:51,336 - werkzeug - INFO -  * Restarting with stat
+2025-05-11 12:12:59,222 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:12:59,222 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:13:04,000 - werkzeug - WARNING -  * Debugger is active!
+2025-05-11 12:13:04,015 - werkzeug - INFO -  * Debugger PIN: 925-072-862
+2025-05-11 12:13:06,684 - __main__ - ERROR - Error in search_image: Invalid file format or size
+2025-05-11 12:13:06,685 - __main__ - WARNING - Validation error: Invalid file format or size
+2025-05-11 12:13:06,687 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:13:06] "[31m[1mPOST /search HTTP/1.1[0m" 400 -
+2025-05-11 12:13:07,350 - __main__ - ERROR - Error in search_image: Invalid file format or size
+2025-05-11 12:13:07,350 - __main__ - WARNING - Validation error: Invalid file format or size
+2025-05-11 12:13:07,351 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:13:07] "[31m[1mPOST /search HTTP/1.1[0m" 400 -
+2025-05-11 12:13:17,245 - __main__ - ERROR - Unexpected error: invalid syntax (<string>, line 1)
+Traceback (most recent call last):
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 58, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 78, in wrapper
+    return jsonify(eval(result))
+  File "<string>", line 1
+    (<Response 726 bytes [200 OK]>, 200)
+     ^
+SyntaxError: invalid syntax
+2025-05-11 12:13:17,246 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:13:17] "[35m[1mGET /tags?search_name=&page=1&per_page=10 HTTP/1.1[0m" 500 -
+2025-05-11 12:13:41,458 - __main__ - ERROR - Error in search_image: Invalid file format or size
+2025-05-11 12:13:41,458 - __main__ - WARNING - Validation error: Invalid file format or size
+2025-05-11 12:13:41,459 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:13:41] "[31m[1mPOST /search HTTP/1.1[0m" 400 -
+2025-05-11 12:14:53,670 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:14:53,670 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:14:57,127 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-05-11 12:14:57,127 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-11 12:14:57,129 - werkzeug - INFO -  * Restarting with stat
+2025-05-11 12:15:07,172 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:15:07,173 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:15:10,646 - werkzeug - WARNING -  * Debugger is active!
+2025-05-11 12:15:10,683 - werkzeug - INFO -  * Debugger PIN: 925-072-862
+2025-05-11 12:15:46,863 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:15:46,863 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:15:50,263 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-05-11 12:15:50,263 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-11 12:15:50,265 - werkzeug - INFO -  * Restarting with stat
+2025-05-11 12:16:00,370 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:16:00,371 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:16:03,888 - werkzeug - WARNING -  * Debugger is active!
+2025-05-11 12:16:03,906 - werkzeug - INFO -  * Debugger PIN: 925-072-862
+2025-05-11 12:16:45,259 - __main__ - ERROR - Error processing search with embedding: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-05-11 12:16:45,260 - __main__ - ERROR - Error in search_image: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-05-11 12:16:51,400 - __main__ - ERROR - Image processing error: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-05-11 12:17:05,839 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:17:05,840 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:17:10,617 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-05-11 12:17:10,617 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-05-11 12:17:10,618 - werkzeug - INFO -  * Restarting with stat
+2025-05-11 12:17:16,436 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: mps
+2025-05-11 12:17:16,437 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2025-05-11 12:17:19,794 - werkzeug - WARNING -  * Debugger is active!
+2025-05-11 12:17:19,807 - werkzeug - INFO -  * Debugger PIN: 925-072-862
+2025-05-11 12:17:28,763 - Service.image_service - INFO - Loading embeddings from Redis cache: embeddings:all
+2025-05-11 12:17:28,778 - __main__ - ERROR - Error processing search with embedding: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-05-11 12:17:28,779 - __main__ - ERROR - Error in search_image: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-05-11 12:17:28,779 - __main__ - ERROR - Image processing error: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+2025-05-11 12:17:28,780 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:17:28] "[31m[1mPOST /search HTTP/1.1[0m" 422 -
+2025-05-11 12:17:44,874 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:17:44] "GET /tags?search_name=&page=1&per_page=10 HTTP/1.1" 200 -
+2025-05-11 12:17:46,128 - __main__ - ERROR - Unexpected error: invalid syntax (<string>, line 1)
+Traceback (most recent call last):
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 58, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 78, in wrapper
+    return jsonify(eval(result))
+  File "<string>", line 1
+    (<Response 726 bytes [200 OK]>, 200)
+     ^
+SyntaxError: invalid syntax
+2025-05-11 12:17:46,129 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:17:46] "[35m[1mGET /tags?search_name=&page=1&per_page=10 HTTP/1.1[0m" 500 -
+2025-05-11 12:17:46,131 - __main__ - ERROR - Unexpected error: invalid syntax (<string>, line 1)
+Traceback (most recent call last):
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 58, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 78, in wrapper
+    return jsonify(eval(result))
+  File "<string>", line 1
+    (<Response 726 bytes [200 OK]>, 200)
+     ^
+SyntaxError: invalid syntax
+2025-05-11 12:17:46,132 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:17:46] "[35m[1mGET /tags?search_name=&page=1&per_page=10 HTTP/1.1[0m" 500 -
+2025-05-11 12:17:46,439 - __main__ - ERROR - Unexpected error: invalid syntax (<string>, line 1)
+Traceback (most recent call last):
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 58, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 78, in wrapper
+    return jsonify(eval(result))
+  File "<string>", line 1
+    (<Response 726 bytes [200 OK]>, 200)
+     ^
+SyntaxError: invalid syntax
+2025-05-11 12:17:46,439 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:17:46] "[35m[1mGET /tags?search_name=&page=1&per_page=10 HTTP/1.1[0m" 500 -
+2025-05-11 12:17:46,442 - __main__ - ERROR - Unexpected error: invalid syntax (<string>, line 1)
+Traceback (most recent call last):
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 58, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/main.py", line 78, in wrapper
+    return jsonify(eval(result))
+  File "<string>", line 1
+    (<Response 726 bytes [200 OK]>, 200)
+     ^
+SyntaxError: invalid syntax
+2025-05-11 12:17:46,443 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:17:46] "[35m[1mGET /tags?search_name=&page=1&per_page=10 HTTP/1.1[0m" 500 -
+2025-05-11 12:17:46,563 - __main__ - WARNING - No results found for tags: No matching images found!
+2025-05-11 12:17:46,565 - werkzeug - INFO - 127.0.0.1 - - [11/May/2025 12:17:46] "POST /search HTTP/1.1" 200 -
+2025-05-11 12:18:25,574 - werkzeug - INFO -  * Detected change in '/Users/tam/Documents/Working/AI/AI_Search_Image/AI_Search/dao/dao.py', reloading
+2025-05-11 12:18:26,989 - werkzeug - INFO -  * Restarting with stat
